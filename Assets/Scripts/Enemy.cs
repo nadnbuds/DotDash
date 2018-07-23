@@ -1,11 +1,12 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
     private ProjectilePooler projectilePool;
     private ProjectilePattern[] projectilePatterns;
+    private Action OnDeath;
 
     public void SetProjectilePatterns(ProjectilePattern[] projectilePatterns)
     {
@@ -15,6 +16,8 @@ public class Enemy : MonoBehaviour
     public void SetProjectilePool(ProjectilePooler projectilePool)
     {
         this.projectilePool = projectilePool;
+        this.projectilePool.transform.SetParent(this.transform);
+        this.projectilePool.transform.localPosition = Vector3.zero;
     }
 
     public void InitiateBulletPatterns()
