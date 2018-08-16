@@ -21,18 +21,12 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        collider.enabled = InputManager.JoystickIsActive;
-
-        //@todo: Create alpha setter
-        if(InputManager.JoystickIsActive == false && player.Stasis > 0)
+        if(InputManager.JoystickIsActive == false)
         {
-            renderer.color = new Color(renderer.color.r, renderer.color.g, renderer.color.b, .5f);
             Time.timeScale = .1f;
-            player.Stasis -= Time.deltaTime * 10f;
         }
         else
         {
-            renderer.color = new Color(renderer.color.r, renderer.color.g, renderer.color.b, 1.0f);
             Time.timeScale = 1f;
         }
 

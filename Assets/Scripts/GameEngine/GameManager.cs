@@ -1,95 +1,66 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
     [SerializeField]
-    private ProjectilePooler pool;
-
-    [SerializeField]
-    private Enemy enemyPrefab;
-
-    [SerializeField]
-    private Player player;
+    public Player Player { get; private set; }
 
     [SerializeField]
     private Button Begin;
 
     [SerializeField]
-    public static int Level { get; private set; }
+    private Text levelText;
 
-    private List<KeyValuePair<Rect, bool>> quadrants;
-
-    private void Awake()
+    private int level;
+    public int Level
     {
-        quadrants = new List<KeyValuePair<Rect, bool>>();
-        Level = 0;
-
-        Begin.onClick.AddListener(() => { Begin.gameObject.SetActive(false); });
-        Begin.onClick.AddListener(Initialize);
-    }
-
-    private void Initialize()
-    {
-        Vector3 Size = UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 1));
-        Size -= UnityEngine.Camera.main.gameObject.transform.position;
-        Size.x *= 2;
-
-        Vector2 PosA = UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 1));
-        Vector2 PosB = UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(0, .5f, 1));
-        Vector2 PosC = UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 1));
-        Rect A = new Rect(PosA, Size);
-        SetupEnemy(A);
-        quadrants.Add(new KeyValuePair<Rect, bool>(A, true));
-
-        Rect B = new Rect(PosB, Size);
-        SetupEnemy(B);
-        quadrants.Add(new KeyValuePair<Rect, bool>(B, true));
-
-        Rect C = new Rect(PosC, Size);
-        quadrants.Add(new KeyValuePair<Rect, bool>(C, false));
-    }
-
-    private void Update()
-    {
-        for(int i = 0; i < quadrants.Count; ++i)
+        get
         {
-            Vector2 bottomPos = quadrants[i].Key.center;
-            bottomPos.y -= quadrants[i].Key.height/2;
-            Vector2 topPos = quadrants[i].Key.center;
-            topPos.y += quadrants[i].Key.height/2;
-            if(CameraUtility.CheckInCameraSpace(bottomPos) && (quadrants[i].Value == false))
-            {
-                quadrants[i] = new KeyValuePair<Rect, bool>(quadrants[i].Key, true);
-                Vector2 newCenter = quadrants[i].Key.center;
-                newCenter.y += quadrants[i].Key.height;
-                Rect newRect = new Rect(newCenter.x, newCenter.y, quadrants[i].Key.width, quadrants[i].Key.height);
-                SetupEnemy(newRect);
-                quadrants.Add(new KeyValuePair<Rect, bool>(newRect, false));
-            }
-            else if(CameraUtility.CheckInCameraSpace(topPos) && (quadrants[i].Value))
-            {
-                quadrants.RemoveAt(i);
-            }
+            return level;
+        }
+        set
+        {
+            levelText.text = value.ToString();
+            level = value;
         }
     }
 
-    private void SetupEnemy(Rect spawnRect)
+    private List<Quadrant> quadrants;
+
+    private void Awake()
     {
-        Enemy enemy = Instantiate(enemyPrefab) as Enemy;
+        quadrants = new List<Quadrant>();
+        Level = 0;
 
-        enemy.transform.position = spawnRect.GetRandomPosition();
+        Begin.onClick.AddListener(() => { Begin.gameObject.SetActive(false); });
+        Begin.onClick.AddListener(InitializeQuadrants);
+    }
 
-        ProjectilePattern[] patterns = new ProjectilePattern[]
-{
-            new WaitPattern(3.0f),
-            new SimplePattern()
-};
+    private void InitializeQuadrants()
+    {
+        createQuadrant(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .25f, 1))).SetOnEnterView(() => { });
+        createQuadrant(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .75f, 1))).SetOnEnterView(() => { });
 
-        enemy.SetProjectilePool(Instantiate(pool));
-        enemy.SetProjectilePatterns(patterns);
-        enemy.InitiateBulletPatterns();
+        createNewQuadrant();
+    }
+
+    private void createNewQuadrant()
+    {
+        //@todo: Mathimatically computer the y value
+        Vector3 Pos = quadrants[quadrants.Count - 1].transform.position;
+        Pos.y += Quadrant.GetQuadSize().y;
+        createQuadrant(Pos).SetOnEnterView(createNewQuadrant);
+    }
+
+    private Quadrant createQuadrant(Vector3 pos)
+    {
+        Quadrant quad = new GameObject().AddComponent<Quadrant>();
+        quad.Initialize(pos, Quadrant.GetQuadSize());
+        quad.SetOnExitView(() => { quad.gameObject.SetActive(false); });
+        quadrants.Add(quad);
+
+        return quad;
     }
 }

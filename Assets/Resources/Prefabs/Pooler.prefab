@@ -52,5 +52,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numToPopulate: 100
-  projectilePrefab: {fileID: 114134920755396472, guid: c653c8d074c191e49a11790cb86b9506,
+  projectilePrefab: {fileID: 114092877273014692, guid: c653c8d074c191e49a11790cb86b9506,
     type: 2}

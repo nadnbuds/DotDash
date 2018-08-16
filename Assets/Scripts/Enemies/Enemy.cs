@@ -6,7 +6,6 @@ public class Enemy : MonoBehaviour
 {
     private ProjectilePooler projectilePool;
     private ProjectilePattern[] projectilePatterns;
-    private Action OnDeath;
 
     public void SetProjectilePatterns(ProjectilePattern[] projectilePatterns)
     {

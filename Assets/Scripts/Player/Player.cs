@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float Stasis;
+    public static Vector2 Position { get; private set; }
+
+    private void Update()
+    {
+        Position = transform.position;
+    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -12,5 +17,8 @@ public class Player : MonoBehaviour
         //Debug.Log("Hit");
     }
 
+    public void Death()
+    {
 
+    }
 }

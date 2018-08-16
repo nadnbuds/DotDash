@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour
+public abstract class Projectile : MonoBehaviour
 {
     public enum ProjectileType
     {
@@ -18,16 +18,7 @@ public class Projectile : MonoBehaviour
     }
 
     //@todo: should be moving using rigidbody
-    protected IEnumerator movementPattern()
-    {
-        while (true)
-        {
-            Vector3 forward = transform.up;
-            transform.position += (forward * Speed * Time.deltaTime);
-
-            yield return null;
-        }
-    }
+    protected abstract IEnumerator movementPattern();
 
     private void OnBecameInvisible()
     {
