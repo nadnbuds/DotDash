@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    private ProjectilePooler projectilePool;
+    [SerializeField]
+    private ObjectPooler projectilePool;
+
     private ProjectilePattern[] projectilePatterns;
 
     public void SetProjectilePatterns(ProjectilePattern[] projectilePatterns)
@@ -12,21 +14,18 @@ public class Enemy : MonoBehaviour
         this.projectilePatterns = projectilePatterns;
     }
 
-    public void SetProjectilePool(ProjectilePooler projectilePool)
-    {
-        this.projectilePool = projectilePool;
-        this.projectilePool.transform.SetParent(this.transform);
-        this.projectilePool.transform.localPosition = Vector3.zero;
-    }
-
     public void InitiateBulletPatterns()
     {
-        for (int i = 0; i < projectilePatterns.Length; ++i)
-        {
-            projectilePatterns[i].setPool(projectilePool);
-        }
-
         StartCoroutine(LoopPattern());
+    }
+
+    private Projectile GetProjectile()
+    {
+        GameObject go = projectilePool.GetGameObject();
+        Projectile projectile = go.GetComponent<Projectile>();
+        projectile = (SimpleProjectile)projectile;
+
+        return projectile;
     }
 
     private IEnumerator LoopPattern()
@@ -36,7 +35,7 @@ public class Enemy : MonoBehaviour
         {
             for(int i = 0; i < projectilePatterns.Length; ++i)
             {
-                yield return StartCoroutine(projectilePatterns[i].ConstructPattern());
+                yield return StartCoroutine(projectilePatterns[i].ConstructPattern(GetProjectile));
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,23 +28,23 @@ public class CirclePattern : ProjectilePattern
         direction = dir;
     }
 
-    public override IEnumerator ConstructPattern()
+    public override IEnumerator ConstructPattern(Func<Projectile> GetProjectiles)
     {
         yield return null;
 
         for (float a = 0; a < ArcPerAxis; a += (ArcPerAxis / numAxisBullets))
         {
-            shootRing(a * direction);
+            shootRing(a * direction, GetProjectiles);
 
             yield return new WaitForSeconds(bufferTimeBetweenBullets);
         }
     }
 
-    private void shootRing(float offset)
+    private void shootRing(float offset, Func<Projectile> GetProjectiles)
     {
         for (float a = 0; a < Circumference; a += ArcPerAxis)
         {
-            Projectile simple = projectilePool.GetProjectile();
+            Projectile simple = GetProjectiles();
 
             simple.transform.Rotate(new Vector3(0, 0, Mathf.Rad2Deg * (a + offset)));
             simple.transform.position += simple.transform.up * (simple.transform.lossyScale.x/2);

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class FollowPattern : ProjectilePattern
@@ -12,7 +13,7 @@ public class FollowPattern : ProjectilePattern
         this.bufferTime = bufferTime;
     }
 
-    public override IEnumerator ConstructPattern()
+    public override IEnumerator ConstructPattern(Func<Projectile> GetProjectiles)
     {
         yield return null;
 
@@ -24,7 +25,7 @@ public class FollowPattern : ProjectilePattern
             buffer -= Time.deltaTime;
             if(buffer < 0)
             {
-                Projectile simple = projectilePool.GetProjectile();
+                Projectile simple = GetProjectiles();
 
                 Vector2 lookDir = Player.Position - new Vector2(simple.transform.position.x, simple.transform.position.y);
                 float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90;

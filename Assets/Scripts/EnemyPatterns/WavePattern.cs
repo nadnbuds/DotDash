@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class WavePattern : ProjectilePattern
@@ -18,7 +19,7 @@ public class WavePattern : ProjectilePattern
         this.startingAngle = startingAngle;
     }
 
-    public override IEnumerator ConstructPattern()
+    public override IEnumerator ConstructPattern(Func<Projectile> GetProjectiles)
     {
         yield return null;
 
@@ -30,7 +31,7 @@ public class WavePattern : ProjectilePattern
             buffer -= Time.deltaTime;
             if(buffer < 0)
             {
-                Projectile simple = projectilePool.GetProjectile();
+                Projectile simple = GetProjectiles();
 
                 float angle = startingAngle + Mathf.Sin(Time.time * speed) * arc;
                 simple.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);

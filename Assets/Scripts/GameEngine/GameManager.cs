@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
+    private const int SectorCount = 4;
+
     [SerializeField]
     public Player Player { get; private set; }
 
@@ -12,6 +14,9 @@ public class GameManager : Singleton<GameManager>
 
     [SerializeField]
     private Text levelText;
+
+    private LinkedList<EnemySector> enemySectors;
+    private Vector3 SectorSize;
 
     private int level;
     public int Level
@@ -27,40 +32,50 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    private List<Quadrant> quadrants;
+    private Vector2 IncomingSectorPosition
+    {
+        get
+        {
+            return UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .75f, 1));
+        }
+    }
 
     private void Awake()
     {
-        quadrants = new List<Quadrant>();
         Level = 0;
 
+        enemySectors = new LinkedList<EnemySector>();
+        SectorSize = GetQuadSize();
+
         Begin.onClick.AddListener(() => { Begin.gameObject.SetActive(false); });
-        Begin.onClick.AddListener(InitializeQuadrants);
+        Begin.onClick.AddListener(InitializeSectors);
     }
 
-    private void InitializeQuadrants()
+    private void InitializeSectors()
     {
-        createQuadrant(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .25f, 1))).SetOnEnterView(() => { });
-        createQuadrant(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .75f, 1))).SetOnEnterView(() => { });
+        LinkedListNode<EnemySector> sectorNode = enemySectors.First;
+        sectorNode.Value.Initialize(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .25f, 1)), SectorSize);
 
-        createNewQuadrant();
+        sectorNode = sectorNode.Next;
+        sectorNode.Value.Initialize(UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(.5f, .75f, 1)), SectorSize);
+
+        sectorNode = sectorNode.Next;
+        sectorNode.Value.Initialize(IncomingSectorPosition, SectorSize);
     }
 
-    private void createNewQuadrant()
+    public void ResetQuadrant()
     {
-        //@todo: Mathimatically computer the y value
-        Vector3 Pos = quadrants[quadrants.Count - 1].transform.position;
-        Pos.y += Quadrant.GetQuadSize().y;
-        createQuadrant(Pos).SetOnEnterView(createNewQuadrant);
+        enemySectors.Last.Value.Initialize(IncomingSectorPosition, SectorSize);
+        enemySectors.AddLast(enemySectors.First);
+        enemySectors.RemoveFirst();
     }
 
-    private Quadrant createQuadrant(Vector3 pos)
+    public Vector3 GetQuadSize()
     {
-        Quadrant quad = new GameObject().AddComponent<Quadrant>();
-        quad.Initialize(pos, Quadrant.GetQuadSize());
-        quad.SetOnExitView(() => { quad.gameObject.SetActive(false); });
-        quadrants.Add(quad);
+        Vector3 quadSize = UnityEngine.Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 1));
+        quadSize -= UnityEngine.Camera.main.gameObject.transform.position;
+        quadSize.x *= 2;
 
-        return quad;
+        return quadSize;
     }
 }
